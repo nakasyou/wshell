@@ -11,7 +11,7 @@ app.get('/api/stream', c => {
   c.header('content-disposition', 'attachment')
   return stream(c, async cb => {
     for (let i = 0; i < 20; i++) {
-      await cb.write(new TextEncoder.encode('data: aaa\n\n'))
+      await cb.write(new TextEncoder().encode('data: aaa\n\n'))
       await cb.sleep(100)
     }
     console.log('closing')
