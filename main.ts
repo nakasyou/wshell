@@ -10,12 +10,12 @@ app.get('/api/stream', c => {
   return streamSSE(c, async cb => {
     while (true) {
       const message = `It is ${new Date().toISOString()}`
-      await stream.writeSSE({
+      await cb.writeSSE({
         data: message,
         event: 'time-update',
         id: String(id++),
       })
-      await stream.sleep(1000)
+      await cb.sleep(1000)
     }
   })
 })
