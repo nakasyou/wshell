@@ -1,22 +1,18 @@
 import { Hono } from 'npm:hono'
 import { serveStatic } from 'npm:hono/deno'
-import { streamSSE } from 'npm:hono/streaming'
+import { stream } from 'npm:hono/streaming'
 
 const app = new Hono()
 
 const shells: Map<string, Deno.Command> = new Map()
 
 app.get('/api/stream', c => {
-  return streamSSE(c, async cb => {
-    let id = 0
-    while (true) {
-      const message = `It is ${new Date().toISOString()}`
-      await cb.writeSSE({
-        data: message,
-        event: 'time-update',
-        id: String(id++),
-      })
-      await cb.sleep(1000)
+  c.header('content-type', 'text/event-stream')
+  c.header('content-disposition', 'attachment')
+  return stream(c, async cb => {
+    for (let i = 0; i < 20; i++) {
+      await cb.write(new TextEncoder.encode('data: aaa'))
+      await cb.sleep(100)
     }
   })
 })
