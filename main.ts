@@ -1,6 +1,6 @@
 import { Hono } from 'npm:hono'
 import { serveStatic } from 'npm:hono/deno'
-import { streamSSE } from 'hono/streaming'
+import { streamSSE } from 'npm:hono/streaming'
 
 const app = new Hono()
 
