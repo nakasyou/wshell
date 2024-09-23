@@ -1,5 +1,5 @@
 import { Hono } from 'npm:hono'
-import { serveStatic } from 'hono/deno'
+import { serveStatic } from 'npm:hono/deno'
 
 const app = new Hono()
 
