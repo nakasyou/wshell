@@ -8,6 +8,7 @@ const shells: Map<string, Deno.Command> = new Map()
 
 app.get('/api/stream', c => {
   return streamSSE(c, async cb => {
+    let id = 0
     while (true) {
       const message = `It is ${new Date().toISOString()}`
       await cb.writeSSE({
