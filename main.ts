@@ -4,7 +4,44 @@ import { stream } from 'npm:hono/streaming'
 
 const app = new Hono()
 
-const shells: Map<string, Deno.Command> = new Map()
+const shells: Map<string, {
+  proc: Deno.ChildProcess
+  queues: {
+    stderr: Uint8Array
+    stdout: Uint8Array
+  }
+}> = new Map()
+
+app.get('/api/create-shell', async c => {
+  const command = new Deno.Command('bash')
+  const proc = command.spawn()
+
+  const id = crypto.randomUUID()
+
+  const queues = {
+    stderr: new Uint8Array(),
+    stdout: new Uint8Array()
+  }
+
+  shells[id] = {
+    proc,
+    queues
+  }
+
+  ;(async () => {
+    for await (const chunk of proc.stdout) {
+      queues.stdout = [...queues.stdout, chunk]
+    }
+  })()
+
+  return c.json({ id })
+})
+
+app.get('/api/get-shell/:id', async c => {
+  const { queues } = shells[c.req.param('id')]
+
+  return c.json({ stdout: [...queues.stdout].join(' ') })
+})
 
 app.get('/api/stream', c => {
   c.header('content-type', 'text/event-stream')
