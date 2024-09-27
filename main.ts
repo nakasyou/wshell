@@ -2,6 +2,9 @@ import { Hono } from 'npm:hono'
 import { serveStatic } from 'npm:hono/deno'
 import { stream } from 'npm:hono/streaming'
 
+const uint8ArrayToB64 = (data: Uint8Array) => btoa([...data].map(n => String.fromCharCode(n)).join(''))
+const b64ToUint8Array = (data: string) => new Uint8Array([...atob(data)].map(s => s.charCodeAt(0)))
+
 const app = new Hono()
 
 let shellCount = -1
@@ -56,8 +59,8 @@ app.get('/api/stdout/:id', async c => {
   const { queues } = shells[c.req.param('id')]
 
   const result = {
-    stdout: [...queues.stdout].join(' '),
-    stderr: [...queues.stderr].join(' '),   
+    stdout: uint8ArrayToB64(queues.stdout),
+    stderr: uint8ArrayToB64(queues.stderr),   
   }
 
   queues.stdout = new Uint8Array()
@@ -66,10 +69,10 @@ app.get('/api/stdout/:id', async c => {
   return c.json(result)
 })
 
-app.get('/api/stdin/:id', async c => {
+app.post('/api/stdin/:id', async c => {
   const { writer } = shells[c.req.param('id')]
 
-  await writer.write(new TextEncoder().encode(c.req.query('d') ?? ''))
+  await writer.write(new Uint8Array(await c.req.arrayBuffer()))
 
   return c.json({ success: true })
 })
