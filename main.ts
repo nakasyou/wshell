@@ -71,7 +71,7 @@ app.get('/api/stdin/:id', async c => {
 
   await writer.write(new TextEncoder().encode(c.req.query('d') ?? ''))
 
-  return { success: true }
+  return c.json({ success: true })
 })
 
 app.get('/', serveStatic({ root: './public' }))
