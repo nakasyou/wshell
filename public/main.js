@@ -14,8 +14,15 @@ $send.onclick = async () => {
   })
 }
 
+let text = ''
+
 const update = async () => {
-  console.log(await fetch(`/api/stdout/${shellId}`).then(res => res.json()))
+  const data = await fetch(`/api/stdout/${shellId}`).then(res => res.json())
+
+  for (const output of data) {
+    text += b64ToUint8Array(output.data)
+  }
+  $shell.textContent = text
   
   setTimeout(update, 100)
 }
