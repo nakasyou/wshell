@@ -81,7 +81,7 @@ app.post('/api/stdin/:id', async c => {
   return c.json({ success: true })
 })
 
-app.get('/', serveStatic({ root: './public' }))
+app.get('*', serveStatic({ root: './public' }))
 
 Deno.addSignalListener('SIGINT', () => {
   console.log('interrupted!')
