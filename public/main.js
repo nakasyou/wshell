@@ -1,9 +1,14 @@
+import { Terminal } from 'https://esm.sh/@xterm/xterm'
+
 const uint8ArrayToB64 = (data) => btoa([...data].map(n => String.fromCharCode(n)).join(''))
 const b64ToUint8Array = (data) => new Uint8Array([...atob(data)].map(s => s.charCodeAt(0)))
 
 const $stdin = document.getElementById('stdin')
 const $shell = document.getElementById('shell')
 const $send = document.getElementById('send')
+
+const term = new Terminal()
+term.open($shell)
 
 const shellId = (await fetch('/api/create-shell').then(res => res.json())).id
 
@@ -21,9 +26,9 @@ const update = async () => {
   const data = await fetch(`/api/stdout/${shellId}`).then(res => res.json())
 
   for (const output of data) {
-    text += shellDecoder.decode(b64ToUint8Array(output.data), { stream: true })
+    term.write(shellDecoder.decode(b64ToUint8Array(output.data), { stream: true }))
   }
-  $shell.textContent = text
+ // $shell.textContent = text
   
   setTimeout(update, 100)
 }
