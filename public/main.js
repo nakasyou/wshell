@@ -16,11 +16,12 @@ $send.onclick = async () => {
 
 let text = ''
 
+const shellDecoder = new TextDecoder()
 const update = async () => {
   const data = await fetch(`/api/stdout/${shellId}`).then(res => res.json())
 
   for (const output of data) {
-    text += b64ToUint8Array(output.data)
+    text += shellDecoder.decode(b64ToUint8Array(output.data), { stream: true })
   }
   $shell.textContent = text
   
