@@ -10,6 +10,7 @@ const shells: Map<string, {
     stderr: Uint8Array
     stdout: Uint8Array
   }
+  writer: any
 }> = new Map()
 
 app.get('/api/create-shell', async c => {
@@ -26,10 +27,12 @@ app.get('/api/create-shell', async c => {
     stderr: new Uint8Array(),
     stdout: new Uint8Array()
   }
+  const writer = await proc.stdin.getWriter()
 
   shells[id] = {
     proc,
-    queues
+    queues,
+    writer
   }
 
   ;(async () => {
@@ -37,27 +40,35 @@ app.get('/api/create-shell', async c => {
       queues.stdout = [...queues.stdout, chunk]
     }
   })()
+  ;(async () => {
+    for await (const chunk of proc.stderr) {
+      queues.stderr = [...queues.stderr, chunk]
+    }
+  })()
 
   return c.json({ id })
 })
 
-app.get('/api/get-shell/:id', async c => {
+app.get('/api/stdout/:id', async c => {
   const { queues } = shells[c.req.param('id')]
 
-  return c.json({ stdout: [...queues.stdout].join(' ') })
+  const result = {
+    stdout: [...queues.stdout].join(' '),
+    stderr: [...queues.stderr].join(' '),   
+  }
+
+  queues.stdout = new Uint8Array()
+  queues.stderr = new Uint8Array()
+
+  return c.json(result)
 })
 
-app.get('/api/stream', c => {
-  c.header('content-type', 'text/event-stream')
-  c.header('content-disposition', 'attachment')
-  return stream(c, async cb => {
-    for (let i = 0; i < 50; i++) {
-      await cb.write(new TextEncoder().encode('data: aaa\n\n'))
-      await cb.sleep(100)
-    }
-    console.log('closing')
-    await cb.close()
-  })
+app.get('/api/stdin/:id', c => {
+  const { writer } = shells[c.req.param('id')]
+
+  await writer.write(new TextEndoder().encode(c.req.query('d') ?? ''))
+
+  return { success: true }
 })
 
 app.get('/', serveStatic({ root: './public' }))
