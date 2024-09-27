@@ -63,7 +63,7 @@ app.get('/api/stdout/:id', async c => {
   return c.json(result)
 })
 
-app.get('/api/stdin/:id', c => {
+app.get('/api/stdin/:id', async c => {
   const { writer } = shells[c.req.param('id')]
 
   await writer.write(new TextEndoder().encode(c.req.query('d') ?? ''))
