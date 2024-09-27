@@ -1,5 +1,5 @@
-const uint8ArrayToB64 = (data: Uint8Array) => btoa([...data].map(n => String.fromCharCode(n)).join(''))
-const b64ToUint8Array = (data: string) => new Uint8Array([...atob(data)].map(s => s.charCodeAt(0)))
+const uint8ArrayToB64 = (data) => btoa([...data].map(n => String.fromCharCode(n)).join(''))
+const b64ToUint8Array = (data) => new Uint8Array([...atob(data)].map(s => s.charCodeAt(0)))
 
 const $stdin = document.getElementById('stdin')
 const $shell = document.getElementById('shell')
