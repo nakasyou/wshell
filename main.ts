@@ -13,7 +13,11 @@ const shells: Map<string, {
 }> = new Map()
 
 app.get('/api/create-shell', async c => {
-  const command = new Deno.Command('bash')
+  const command = new Deno.Command('bash', {
+    stdin: 'piped',
+    stdout: 'piped',
+    stderr: 'piped'
+  })
   const proc = command.spawn()
 
   const id = crypto.randomUUID()
