@@ -10,6 +10,8 @@ const $send = document.getElementById('send')
 const term = new Terminal()
 term.open($shell)
 
+globalThis.term = term
+
 const shellId = (await fetch('/api/create-shell').then(res => res.json())).id
 
 $send.onclick = async () => {
