@@ -24,7 +24,8 @@ app.get('/api/create-shell', async c => {
   const command = new Deno.Command('bash', {
     stdin: 'piped',
     stdout: 'piped',
-    stderr: 'piped'
+    stderr: 'piped',
+    args: ['-i']
   })
   const proc = command.spawn()
 
