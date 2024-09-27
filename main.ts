@@ -4,6 +4,8 @@ import { stream } from 'npm:hono/streaming'
 
 const app = new Hono()
 
+let shellCount = -1
+
 const shells: Map<string, {
   proc: Deno.ChildProcess
   queues: {
@@ -21,7 +23,8 @@ app.get('/api/create-shell', async c => {
   })
   const proc = command.spawn()
 
-  const id = crypto.randomUUID()
+  shellCount ++
+  const id = shellCount.toString()
 
   const queues = {
     stderr: new Uint8Array(),
