@@ -10,7 +10,10 @@
   </head>
   <body>
     <div>
-      <input id="stdin" type="text" placeholder="content" />
+      <div class="flex items-center">
+        <textarea id="stdin" type="text" placeholder="content" />
+        <button id="send">Send</button>
+      </div>
       <div id="shell"></div>
     </div>
     <script src="/main.js" type="module"></script>
