@@ -9,12 +9,14 @@ const app = new Hono()
 
 let shellCount = -1
 
+interface StdOutput {
+  type: 'err' | 'out'
+  data: Uint8Array
+}
+
 const shells: Map<string, {
   proc: Deno.ChildProcess
-  queues: {
-    stderr: Uint8Array
-    stdout: Uint8Array
-  }
+  queues: StdOutput[]
   writer: any
 }> = new Map()
 
@@ -29,26 +31,29 @@ app.get('/api/create-shell', async c => {
   shellCount ++
   const id = shellCount.toString()
 
-  const queues = {
-    stderr: new Uint8Array(),
-    stdout: new Uint8Array()
-  }
   const writer = await proc.stdin.getWriter()
 
-  shells[id] = {
+  const shell = {
     proc,
-    queues,
+    queues: [],
     writer
   }
+  shells[id] = shell
 
   ;(async () => {
     for await (const chunk of proc.stdout) {
-      queues.stdout = [...queues.stdout, chunk]
+      shell.queues.push({
+        type: 'out',
+        data: chunk
+      })
     }
   })()
   ;(async () => {
     for await (const chunk of proc.stderr) {
-      queues.stderr = [...queues.stderr, chunk]
+      shell.queues.push({
+        type: 'err',
+        data: chunk
+      })
     }
   })()
 
@@ -56,15 +61,14 @@ app.get('/api/create-shell', async c => {
 })
 
 app.get('/api/stdout/:id', async c => {
-  const { queues } = shells[c.req.param('id')]
+  const shell = shells[c.req.param('id')]
 
-  const result = {
-    stdout: uint8ArrayToB64(queues.stdout),
-    stderr: uint8ArrayToB64(queues.stderr),   
-  }
+  const result = shell.queues.map(output => ({
+    type: output.type,
+    data: uint8ArrayToB64(output.data)
+  }))
 
-  queues.stdout = new Uint8Array()
-  queues.stderr = new Uint8Array()
+  shell.queues = []
 
   return c.json(result)
 })
